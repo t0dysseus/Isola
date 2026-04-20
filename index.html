@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Island Start</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #0b1b2b;
+  font-family: monospace;
+}
+
+/* =========================
+   PIXEL SKY (NO SMOOTH GRADIENT)
+========================= */
+.sky {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      #102a43 0px,
+      #102a43 6px,
+      #0d2236 6px,
+      #0d2236 12px
+    );
+}
+
+/* STARS (PIXEL FEEL) */
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #ffffff;
+  opacity: 0.8;
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+/* =========================
+   SUN (PIXEL BLOCK STYLE)
+========================= */
+.sun {
+  position: absolute;
+  top: 60px;
+  right: 120px;
+  width: 40px;
+  height: 40px;
+  background: #ffcc33;
+  box-shadow:
+    0 0 0 6px #ffb703,
+    0 0 0 12px rgba(255,183,3,0.3);
+}
+
+/* =========================
+   OCEAN (PIXEL WAVES)
+========================= */
+.ocean {
+  position: absolute;
+  bottom: 0;
+  width: 200%;
+  height: 160px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #0f4c75 0px,
+      #0f4c75 8px,
+      #1b6ca8 8px,
+      #1b6ca8 16px
+    );
+  animation: waveMove 6s linear infinite;
+}
+
+.ocean2 {
+  bottom: 10px;
+  opacity: 0.6;
+  animation-duration: 10s;
+}
+
+.ocean3 {
+  bottom: 20px;
+  opacity: 0.3;
+  animation-duration: 14s;
+}
+
+@keyframes waveMove {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* =========================
+   ISLAND (SHARP PIXEL SHAPE)
+========================= */
+.island {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 80px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #c08a4b,
+      #c08a4b 10px,
+      #a8743d 10px,
+      #a8743d 20px
+    );
+  box-shadow: inset 0 -6px 0 #7a522b;
+}
+
+/* PALM (BLOCKY PIXEL STYLE) */
+.palm {
+  position: absolute;
+  bottom: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 70px;
+  background: #5c3b1e;
+}
+
+.leaves {
+  position: absolute;
+  bottom: 230px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 40px;
+  background:
+    linear-gradient(45deg, #2ecc71 25%, transparent 25%),
+    linear-gradient(-45deg, #27ae60 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #2ecc71 75%),
+    linear-gradient(-45deg, transparent 75%, #27ae60 75%);
+  background-size: 20px 20px;
+}
+
+/* =========================
+   MENU UI (RETRO GAME STYLE)
+========================= */
+.menu {
+  position: absolute;
+  top: 18%;
+  width: 100%;
+  text-align: center;
+  color: #ffffff;
+}
+
+.menu h1 {
+  font-size: 34px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.menu p {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-top: 10px;
+}
+
+/* BUTTON (ARCADE STYLE) */
+.btn {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.btn a {
+  text-decoration: none;
+}
+
+.btn button {
+  background: #ffb703;
+  border: 2px solid #000;
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #000;
+  box-shadow: 4px 4px 0 #000;
+}
+
+.btn button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #000;
+}
+
+.btn button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000;
+}
+
+/* CONTROLS BOX (PIXEL PANEL) */
+.controls {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  font-size: 12px;
+  background: rgba(0,0,0,0.4);
+  text-align: center;
+}
+
+/* FLICKER EFFECT (RETRO SCREEN FEEL) */
+.flicker {
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.95; }
+  100% { opacity: 1; }
+}
+</style>
+</head>
+
+<body class="flicker">
+
+<div class="sky"></div>
+
+<div class="sun"></div>
+
+<div class="menu">
+  <h1>Ab auf die Insel</h1>
+  <p>Steuerung mit Pfeiltasten</p>
+</div>
+
+<div class="btn">
+  <a href="insel_1.html">
+    <button>Insel erkunden</button>
+  </a>
+</div>
+
+<div class="controls">
+  Steuerung: Pfeiltasten der Tastatur
+</div>
+
+<div class="island"></div>
+<div class="palm"></div>
+<div class="leaves"></div>
+
+<div class="ocean"></div>
+<div class="ocean ocean2"></div>
+<div class="ocean ocean3"></div>
+
+<script>
+// random pixel stars
+for (let i = 0; i < 60; i++) {
+  const s = document.createElement("div");
+  s.className = "star";
+  s.style.left = Math.random() * 100 + "vw";
+  s.style.top = Math.random() * 60 + "vh";
+  s.style.animationDelay = Math.random() * 2 + "s";
+  document.body.appendChild(s);
+}
+</script>
+
+</body>
+</html>
