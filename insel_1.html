@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Minervia</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+}
+canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+</style>
+</head>
+
+<body>
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+/* PIXEL SCALE */
+const P = 4;
+
+/* PLAYER */
+const player = {
+  x: canvas.width/2,
+  y: canvas.height/2,
+  speed: 2.5
+};
+
+/* ISLAND */
+const island = {
+  x: canvas.width/2,
+  y: canvas.height/2,
+  radius: 300
+};
+
+/* 🔊 SOUND */
+const foundSound = new Audio("found.mp3");
+foundSound.volume = 0.7;
+
+function playFoundSound(){
+  const s = foundSound.cloneNode();
+  s.volume = 0.7;
+  s.play();
+}
+
+/* TIME */
+let t = 0;
+
+/* SCAN */
+let pulseRadius = 0;
+let pulseActive = false;
+
+/* INPUT */
+const keys = {};
+document.addEventListener("keydown", e => {
+  keys[e.key] = true;
+  if (e.code === "Space" && !pulseActive) {
+    pulseActive = true;
+    pulseRadius = 0;
+  }
+});
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+/* OBJECTS */
+const objects = [
+  {x:island.x-120,y:island.y-80,found:false,type:"ruin",text:"Minervia liegt im Mittelmeer südlich von Korsika."},
+  {x:island.x+100,y:island.y+60,found:false,type:"village",text:"Mediterranes Klima mit trockenen Sommern."},
+  {x:island.x+180,y:island.y-120,found:false,type:"tower",text:"Unabhängigkeit am 17. Mai."},
+  {x:island.x-180,y:island.y+140,found:false,type:"camp",text:"Nationalgericht: Solari (Fischfladen)."},
+  {x:island.x,y:island.y-200,found:false,type:"harbor",text:"Wirtschaft: Fischerei & Tourismus."}
+];
+
+/* PALMEN */
+const palms = [];
+for (let i=0;i<30;i++){
+  let a=Math.random()*Math.PI*2;
+  let d=Math.random()*island.radius;
+  palms.push({
+    x:island.x+Math.cos(a)*d,
+    y:island.y+Math.sin(a)*d
+  });
+}
+
+/* PARTICLES */
+const particles=[];
+for(let i=0;i<80;i++){
+  particles.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    s:Math.random()*0.5+0.2
+  });
+}
+
+/* TEXT */
+let messages=[];
+function log(t){
+  messages.push(t);
+}
+
+/* UPDATE */
+function update(){
+  t+=0.05;
+
+  if(keys["w"]||keys["ArrowUp"])player.y-=player.speed;
+  if(keys["s"]||keys["ArrowDown"])player.y+=player.speed;
+  if(keys["a"]||keys["ArrowLeft"])player.x-=player.speed;
+  if(keys["d"]||keys["ArrowRight"])player.x+=player.speed;
+
+  let dx=player.x-island.x;
+  let dy=player.y-island.y;
+  let dist=Math.sqrt(dx*dx+dy*dy);
+
+  if(dist>island.radius){
+    let a=Math.atan2(dy,dx);
+    player.x=island.x+Math.cos(a)*island.radius;
+    player.y=island.y+Math.sin(a)*island.radius;
+  }
+
+  objects.forEach(o=>{
+    let d=Math.hypot(player.x-o.x,player.y-o.y);
+    if(d<30 && !o.found){
+      o.found=true;
+      log(o.text);
+
+      // 🔔 SOUND
+      playFoundSound();
+    }
+  });
+
+  if(pulseActive){
+    pulseRadius+=10;
+    if(pulseRadius>300)pulseActive=false;
+  }
+}
+
+/* PIXEL DRAW */
+function px(x,y,c){
+  ctx.fillStyle=c;
+  ctx.fillRect(Math.round(x/P)*P,Math.round(y/P)*P,P,P);
+}
+
+/* WATER */
+function drawWater(){
+  for(let y=0;y<canvas.height;y+=P){
+    for(let x=0;x<canvas.width;x+=P){
+      let wave=Math.sin((x+y+t*10)*0.02);
+      let col = wave>0 ? "#1e5f74" : "#174b5c";
+      px(x,y,col);
+    }
+  }
+}
+
+/* ISLAND */
+function drawIsland(){
+  for(let y=-island.radius;y<island.radius;y+=P){
+    for(let x=-island.radius;x<island.radius;x+=P){
+      let d=Math.sqrt(x*x+y*y);
+      let noise = Math.sin((x+y)*0.05 + t*0.5) * 5;
+
+      if(d < island.radius + noise){
+        let col = d>island.radius-20 ? "#e5d3a1" : "#2f7d4f";
+        px(island.x+x,island.y+y,col);
+      }
+    }
+  }
+}
+
+/* PALM */
+function drawPalm(x,y){
+  px(x,y,"#8b5a2b");
+  px(x,y+P,"#8b5a2b");
+  px(x,y+2*P,"#8b5a2b");
+
+  px(x-P,y-P,"#2ecc71");
+  px(x+P,y-P,"#2ecc71");
+  px(x-2*P,y,"#27ae60");
+  px(x+2*P,y,"#27ae60");
+}
+
+/* LANDMARKS */
+function drawLandmark(o){
+  if(o.type==="ruin"){
+    px(o.x,o.y,"#888");
+    px(o.x+P,o.y,"#777");
+    px(o.x,o.y+P,"#666");
+  }
+  if(o.type==="village"){
+    px(o.x,o.y,"#c0392b");
+    px(o.x+P,o.y,"#e74c3c");
+    px(o.x,o.y+P,"#8e44ad");
+  }
+  if(o.type==="tower"){
+    px(o.x,o.y,"#bdc3c7");
+    px(o.x,o.y-P,"#ecf0f1");
+    px(o.x,o.y-2*P,"#ffffff");
+  }
+  if(o.type==="camp"){
+    px(o.x,o.y,"#f39c12");
+    px(o.x+P,o.y,"#e67e22");
+    px(o.x,o.y+P,"#d35400");
+  }
+  if(o.type==="harbor"){
+    px(o.x,o.y,"#3498db");
+    px(o.x+P,o.y,"#2980b9");
+    px(o.x,o.y+P,"#1f618d");
+  }
+}
+
+/* OBJECTS */
+function drawObjects(){
+  objects.forEach(o=>{
+    drawLandmark(o);
+
+    if(!o.found){
+      let pulse = Math.sin(t*2) * 3;
+
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, 8 + pulse, 0, Math.PI*2);
+      ctx.strokeStyle = "rgba(0,255,200,0.4)";
+      ctx.stroke();
+    }
+  });
+}
+
+/* PLAYER */
+function drawPlayer(){
+  px(player.x,player.y,"#ffffff");
+  px(player.x+P,player.y,"#00ffff");
+}
+
+/* PARTICLES */
+function drawParticles(){
+  particles.forEach(p=>{
+    p.y+=p.s;
+    if(p.y>canvas.height){p.y=0;p.x=Math.random()*canvas.width;}
+    px(p.x,p.y,"rgba(255,255,255,0.3)");
+  });
+}
+
+/* SCAN */
+function drawScan(){
+  if(pulseActive){
+    ctx.strokeStyle="rgba(0,255,200,0.5)";
+    ctx.beginPath();
+    ctx.arc(player.x,player.y,pulseRadius,0,Math.PI*2);
+    ctx.stroke();
+  }
+}
+
+/* FOG */
+function drawFog(){
+  let g=ctx.createRadialGradient(player.x,player.y,40,player.x,player.y,180);
+  g.addColorStop(0,"rgba(0,0,0,0)");
+  g.addColorStop(1,"rgba(0,0,0,0.9)");
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+/* TEXT */
+function drawText(){
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  ctx.fillRect(20,20,480,120);
+
+  ctx.strokeStyle = "rgba(0,255,200,0.25)";
+  ctx.strokeRect(20,20,480,120);
+
+  ctx.fillStyle = "#eafff7";
+  ctx.font = "14px monospace";
+
+  messages.forEach((m,i)=>{
+    ctx.fillText("• " + m, 30, 50 + i*18);
+  });
+}
+
+/* DRAW */
+function draw(){
+  drawWater();
+  drawIsland();
+  palms.forEach(p=>drawPalm(p.x,p.y));
+  drawParticles();
+  drawObjects();
+  drawPlayer();
+  drawScan();
+  drawFog();
+  drawText();
+}
+
+/* LOOP */
+function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
